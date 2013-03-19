@@ -22,7 +22,8 @@
     "grunt-requirejs": "~0.3.2",
     "grunt-mocha": "~0.2.2",
     "grunt-open": "~0.2.0",
-    "matchdep": "~0.1.1"
+    "matchdep": "~0.1.1",
+    "handlebars": "~1.0.10"
   },
   "engines": {
     "node": ">=0.8.0"

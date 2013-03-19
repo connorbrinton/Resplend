@@ -14,6 +14,8 @@ var mountFolder = function (connect, dir) {
 module.exports = function (grunt) {
     // load all grunt tasks
     require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+    // load handlebars for server-side templating
+    Handlebars = require('handlebars);
 
     // configurable paths
     var yeomanConfig = {
