@@ -245,6 +245,13 @@ module.exports = function (grunt) {
             all: {
                 rjsConfig: '<%= yeoman.app %>/scripts/main.js'
             }
+        },
+        hbserver: {
+            dist: {
+                src: '<%= yeoman.app %>', // Perhaps you should use the format of htmlmin
+                dest: '<%= yeoman.dist %>',
+                partials: '<%= yeoman.app %>/partials'
+            }
         }
     });
 
