@@ -12,63 +12,42 @@ module.exports = function(grunt) {
 		grunt.log.write('Compiling static HTML from handlebars templates...'+'\n');
 		var Handlebars = require('handlebars');
 
-		// grunt.log.writeln('%j', this.files);
+		/* Partial file initialization */
+		var glob = require('glob');
+		var partialFiles = glob.sync(this.data.partials, {});
+		partialFiles.forEach(function(path) {
+			var filename = path.replace(/^.*[\\\/]/, '');
+			var partialName = tidyPartialName(filename);
+			var template = Handlebars.compile(grunt.file.read(path));
+			Handlebars.registerPartial(partialName, template);
+		});
+
 		this.files.forEach(function(f) {
 			/* Source file initialization */
-			var src = f.src;
-			// grunt.log.writeln('src.length: %d', src.length);
-			if (src.length > 1) {
-				var err = new Error('Please specify one directory to compile, not multiple files.');
-				grunt.fail.warn(err);
+			if (f.src.length !== 1) {
+				grunt.fail.warn(new Error('Please use `expand: true` to specify the files to process.'));
 			}
-			src = src[0];
+			var src = f.src[0];
 			if (!grunt.file.exists(src)) {
-				var err = new Error('Source directory "' + src + '" does not exist');
-				grunt.fail.warn(err);
-			} else if (!grunt.file.isDir(src)) {
-				var err = new Error('Source directory "' + src + '" is not a directory.');
-				grunt.fail.warn(err);
+				grunt.fail.warn(new Error('Source file "' + src + '" does not exist'));
+			} else if (grunt.file.isDir(src)) {
+				grunt.fail.warn(new Error('Source file "' + src + '" is directory.'));
 			}
 
 			/* Destination file initialization */
-			var dest = f.dest;
-			// grunt.log.writeln('dest: %j', dest);
-			// grunt.log.writeln('dest.length: %d', dest.length);
-			if (isArray(dest)) {
-				var err = new Error('Please specify only one destination directory (not using an array).');
-				grunt.fail.warn(err);
+			if (isArray(f.dest)) {
+				grunt.fail.warn(new Error('Please specify only one destination directory (not using an array).'));
 			}
 			if (!grunt.file.exists()) {
-				grunt.file.mkdir(dest);
+				grunt.file.mkdir(f.dest);
 			}
 
-			/* Partial file initialization */
-			var partials = f.partials;
-			if (!grunt.file.exists(partials)) {
-				var err = new Error('Partials directory "' + filepath + '" does not exist');
-				grunt.fail.warn(err);
-			} else if (!grunt.file.isDir(partials)) {
-				var err = new Error('Partials directory "' + filepath + '" is not a directory.');
-				grunt.fail.warn(err);
-			}
-
-			/* Loading partial files */
-			grunt.file.recurse(partials, function(abspath, rootdir, subdir, filename) {
-				var partialName = tidyPartialName(filename);
-				var template = Handlebars.compile(grunt.file.read(abspath));
-				Handlebars.registerPartial(partialName, template);
-			});
 
 			/* Compiling/templating */
-			grunt.file.recurse(src, function(abspath, rootdir, subdir, filename) {
-				if (endsWith(filename, '.html')) {
-					var html = grunt.file.read(abspath);
-					var compiled = Handlebars.compile(html); // Returns a function that evaluates the template
-					var finished = compiled({}); // Execute the function with a (currently) empty context
-					var targetFile = getTargetFile(dest, subdir, filename);
-					grunt.file.write(targetFile, finished);
-				}
-			});
+			var html = grunt.file.read(src);
+			var compiled = Handlebars.compile(html); // Returns a function that evaluates the template
+			var finished = compiled({}); // Execute the function with a (currently) empty context
+			grunt.file.write(f.dest, finished);
 		});
 	});
 };
@@ -87,13 +66,4 @@ function tidyPartialName(filename) {
 	var nameEnd = filename.indexOf('.');
 	nameEnd = (nameEnd !== -1 ? nameEnd : filename.length);
 	return filename.substring(nameStart, nameEnd);
-}
-
-function getTargetFile(dest, subdir, filename) {
-	var targetFile = dest;
-	if (subdir !== undefined) {
-		targetFile = targetFile + '/' + subdir;
-	}
-	targetFile = targetFile + '/' + filename;
-	return targetFile;
 }

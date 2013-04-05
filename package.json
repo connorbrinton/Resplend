@@ -23,7 +23,8 @@
     "grunt-mocha": "~0.2.2",
     "grunt-open": "~0.2.0",
     "matchdep": "~0.1.1",
-    "handlebars": "~1.0.10"
+    "handlebars": "~1.0.10",
+    "glob": "~3.1.21"
   },
   "engines": {
     "node": ">=0.8.0"
